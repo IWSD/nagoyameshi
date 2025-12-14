@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Avg
+from django.db.models.functions import Coalesce
+
 
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -24,11 +26,39 @@ class TopView(ListView):
   template_name = "top.html"
   context_object_name = "shops"
 
-  #レビュー平均点数計算
   def get_queryset(self):
-      return Shop.objects.annotate(
-          avg_rating=Avg("reviews__rating")
-      )
+      queryset = Shop.objects.all()
+      # GETで検索条件取得
+      name = self.request.GET.get("name")
+      station = self.request.GET.get("station")
+      sort = self.request.GET.get("sort")
+
+      # 店舗名検索（部分一致）
+      if name:
+          queryset = queryset.filter(name__icontains=name)
+      # 最寄駅検索（部分一致）
+      if station:
+          queryset = queryset.filter(near_station__icontains=station) 
+  
+      # --- 評価平均を計算 ---
+      queryset = queryset.annotate(
+         avg_rating=Avg("reviews__rating")).annotate(sort_rating=Coalesce("avg_rating", 0.0))
+
+      # --- 並び替え ---
+      if sort == "rating":
+        queryset = queryset.order_by("-sort_rating")
+      else:
+      # デフォルトは新着順
+        queryset = queryset.order_by("-id")
+
+      return queryset   
+  
+  # 検索ヒット数
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context["result_count"] = self.get_queryset().count()
+      context["current_sort"] = self.request.GET.get("sort", "")
+      return context
 
 class LoginView(LoginView):
   form_class = AuthenticationForm

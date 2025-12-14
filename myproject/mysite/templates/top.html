@@ -3,9 +3,53 @@
 {% block title %}トップ画面{% endblock %}
 
 {% block content %}
+
+<!-- 店舗検索フォーム -->
+ <form method="get" class="row g-2 mb-4">
+    <div class="col-md-4">
+        <input type="text" name="name" class="form-control" placeholder="店舗名" value="{{ request.GET.name }}">
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="station" class="form-control" placeholder="最寄駅" value="{{ request.GET.station }}">
+    </div>
+ <!-- 新着/評価順選択 -->
+    <div class="col-md-3">
+        <select name="sort" class="form-select">
+            <option value="">新着順</option>
+            <option value="rating" {% if current_sort == "rating" %}selected{% endif %}>評価が高い順
+            </option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit"  class="btn btn-primary w-100">検索</button>
+    </div>
+ </form>
+
+ <!-- 検索条件表示 -->
+ {% if request.GET.name or request.GET.station %}
+    <div class="alert alert-info">
+        <strong>検索条件：</strong>
+        {% if request.GET.name %}
+            店舗名「{{ request.GET.name }}」
+        {% endif %}
+        {% if request.GET.station %}
+            {% if request.GET.name %}、{% endif %}
+            最寄駅「{{ request.GET.station }}」
+        {% endif %}
+    </div>
+ {% endif %}
+
+ {% if request.GET.name or request.GET.station %}
+    <p class="mb-3">
+        <strong>{{ result_count }}件</strong> 見つかりました
+    </p>
+{% endif %}
+
 <h1 class="mb-4">店舗一覧</h1>
 
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+  {% if shops %}
     {% for shop in shops %}
     <div class="col">
         <div class="card h-100">
@@ -31,5 +75,10 @@
         </div>
     </div>
     {% endfor %}
+ {% else %}
+        <div class="alert alert-warning">
+            該当する店舗は見つかりませんでした。
+        </div>
+ {% endif %}
 </div>
 {% endblock %}
