@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}トップ画面{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">店舗一覧</h1>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    {% for shop in shops %}
+    <div class="col">
+        <div class="card h-100">
+            {% if shop.img %}
+                <a href="/shop/{{ shop.id }}/"><img src="{{ shop.img.url }}" class="card-img-top" alt="{{ shop.name }}"></a>
+            {% else %}
+                <img src="/media/noImage.png" class="card-img-top" alt="No Image">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title"><a href="/shop/{{ shop.id }}/">{{ shop.name }}</a></h5>
+                <p class="card-text">{{ shop.shop_explanation|truncatechars:50 }}</p>
+            </div>
+
+            {% if shop.avg_rating %}
+                <p>評価：{{ shop.avg_rating|floatformat:1 }} 点</p>
+                {% else %}
+                <p>評価：未評価</p>
+            {% endif %}
+
+            <div class="card-footer">
+                <small class="text-muted">{{ shop.near_station }} 徒歩{{ shop.walk_minutes }}分</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

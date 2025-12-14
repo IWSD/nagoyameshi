@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}予約フォーム{% endblock %}
+
+{% block content %}
+<h2>{{ shop.name }} の予約</h2>
+
+<!--　POSTのurlの渡し方の問題 -->
+<form method="post"> 
+  {% csrf_token %}
+  <!-- shopID渡し方の確認 -->
+  <input type="hidden" name="restaurant_id" value="{{ shop.id }}"> 
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">予約する</button>
+</form>
+
+<a href="{% url 'shop_detail' pk=shop.pk %}" class="btn btn-secondary mt-2">戻る</a>
+{% endblock %}

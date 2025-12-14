@@ -1,0 +1,1 @@
+[{"model": "mysite.category", "pk": 1, "fields": {"name": "和食"}}, {"model": "mysite.category", "pk": 2, "fields": {"name": "洋食"}}, {"model": "mysite.category", "pk": 3, "fields": {"name": "ラーメン"}}, {"model": "mysite.category", "pk": 4, "fields": {"name": "スイーツ"}}]

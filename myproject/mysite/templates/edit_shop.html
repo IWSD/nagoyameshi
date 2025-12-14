@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>店舗情報編集：{{ shop.name }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">更新す</button>
+</form>
+
+{% if shop.img %}
+    <hr>
+    <h4>現在の画像</h4>
+    <img src="{{ shop.img.url }}" width="300">
+{% endif %}
+
+{% endblock %}

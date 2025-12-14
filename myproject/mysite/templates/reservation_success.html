@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}予約完了{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+  <h2 class="mb-4 text-success">ご予約ありがとうございます！</h2>
+  
+  <p>{{ shop.name }} の予約が完了しました。</p>
+  <p>日時：{{ reservation.date }} {{ reservation.time }}</p>
+  <p>人数：{{ reservation.num_people }} 名</p>
+
+  <a href="{% url 'shop_detail' pk=shop.pk %}" class="btn btn-primary mt-4">店舗ページに戻る</a>
+  <a href="{% url 'top' %}" class="btn btn-secondary mt-4">トップページへ</a>
+</div>
+{% endblock %}
