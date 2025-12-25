@@ -19,7 +19,7 @@ from django.urls import path, include
 from mysite import views
 from django.conf import settings
 from django.conf.urls.static import static
-from mysite.views import CreateCheckoutSessionView, stripe_webhook, cancel_subscription,ShopUpdateView, MyShopListView
+from mysite.views import CreateCheckoutSessionView, stripe_webhook, cancel_subscription,ShopUpdateView, MyShopListView, test_mail
 
 
 urlpatterns = [
@@ -34,6 +34,7 @@ urlpatterns = [
     path('shop/<int:pk>/reserve/', views.ReservationInitialView.as_view(), name='reservation_initial'),
     # path("edit/<int:shop_id>/", edit_shop, name="edit_shop"),
     path('reservation/success/<int:reservation_id>/', views.ReservationSuccessView.as_view(), name='reservation_success'),
+    path("test-mail/", test_mail, name="test_mail"),
     path("mypage/", views.MyPageView.as_view(), name="mypage"),
     path("create-checkout-session/", views.CreateCheckoutSessionView.as_view(), name="create_checkout_session"),
     path('webhook/stripe/', stripe_webhook, name='stripe_webhook'),

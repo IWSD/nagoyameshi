@@ -14,6 +14,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Avg
 from django.db.models.functions import Coalesce
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 from django.contrib.auth.views import LoginView, LogoutView
@@ -177,13 +179,39 @@ class ReservationInitialView(LoginRequiredMixin, UserPassesTestMixin, CreateView
         form.instance.user = self.request.user
         shop = Shop.objects.get(pk=self.kwargs['pk'])
         form.instance.shop = Shop.objects.get(pk=self.kwargs['pk'])
+        # form.instance.shop = shop
 
         try:
             form.instance.clean()  # 上限チェック
         except ValidationError as e:
             form.add_error(None, e.message)
             return self.form_invalid(form)
-        return super().form_valid(form)
+        # return super().form_valid(form)
+   
+        # ===== ① 予約を保存 =====
+        response = super().form_valid(form)
+        # ===== ② 保存された予約を取得 =====
+        reservation = self.object
+        user = self.request.user
+        # ===== ③ メール送信 =====
+        send_mail(
+          subject="【予約完了】ご予約ありがとうございます",
+          message=(
+              f"{user.username} 様\n\n"
+              f"以下の内容で予約を受け付けました。\n\n"
+              f"店舗名：{shop.name}\n"
+              f"予約日：{reservation.date}\n"
+              f"予約時間：{reservation.time}\n"
+              f"人数：{reservation.num_people} 名\n\n"
+              f"ご来店をお待ちしております。"
+          ),
+          from_email=settings.DEFAULT_FROM_EMAIL,
+          recipient_list=[user.email],
+          fail_silently=False,
+        )
+       # ===== ④ 成功画面へ =====
+        return response
+  
 
     def get_success_url(self):
         return reverse_lazy('reservation_success', kwargs={'reservation_id': self.object.id})
@@ -199,6 +227,17 @@ class ReservationSuccessView(LoginRequiredMixin, TemplateView):
         context['reservation'] = reservation
         context['shop'] = reservation.shop
         return context
+
+def test_mail(request):
+    send_mail(
+        subject="【テスト】メール送信確認",
+        message="これはDjangoの開発用メール送信テストです。",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=["test@example.com"],
+        fail_silently=False,
+    )
+    return HttpResponse("メール送信テスト完了（コンソールを確認してください）")
+
 
 #会員情報一覧
 class MyPageView(LoginRequiredMixin, TemplateView):
