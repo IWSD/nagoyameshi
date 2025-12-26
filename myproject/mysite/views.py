@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import TemplateView, ListView, DetailView, UpdateView, CreateView
 from django.urls import reverse_lazy, reverse
 from django.core.exceptions import ValidationError
-from .models import Shop, Review, Reservation
+from .models import Shop, Review, Reservation, Category
 from .forms import ReviewForm, ReservationForm, ShopForm
 from accounts.models import CustomUser
 import stripe
@@ -33,6 +33,8 @@ class TopView(ListView):
       # GETで検索条件取得
       name = self.request.GET.get("name")
       station = self.request.GET.get("station")
+      category_id = self.request.GET.get("category")
+      price = self.request.GET.get("price")
       sort = self.request.GET.get("sort")
 
       # 店舗名検索（部分一致）
@@ -41,6 +43,15 @@ class TopView(ListView):
       # 最寄駅検索（部分一致）
       if station:
           queryset = queryset.filter(near_station__icontains=station) 
+      
+       # 料理種別検索
+      if category_id:
+            queryset = queryset.filter(shop_category_id=category_id)
+
+      # 価格帯検索
+      if price:
+            queryset = queryset.filter(price_range__lte=price)
+
   
       # --- 評価平均を計算 ---
       queryset = queryset.annotate(
@@ -60,6 +71,8 @@ class TopView(ListView):
       context = super().get_context_data(**kwargs)
       context["result_count"] = self.get_queryset().count()
       context["current_sort"] = self.request.GET.get("sort", "")
+       # カテゴリ一覧（プルダウン用）
+      context["categories"] = Category.objects.all()
       return context
 
 class LoginView(LoginView):

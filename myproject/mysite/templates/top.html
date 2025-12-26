@@ -12,6 +12,34 @@
     <div class="col-md-4">
         <input type="text" name="station" class="form-control" placeholder="最寄駅" value="{{ request.GET.station }}">
     </div>
+      <!-- 料理種別 -->
+     <div class="col-md-3">
+            <select name="category" class="form-select">
+            <option value="">料理種別</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}"
+                {% if request.GET.category == category.id|stringformat:"s" %}
+                    selected
+                {% endif %}
+                >
+                {{ category.name }}
+                </option>
+            {% endfor %}
+            </select>
+        </div>
+
+          <!-- 価格帯 -->
+            <div class="col-md-2">
+                <select name="price" class="form-select">
+                <option value="">価格帯</option>
+                <option value="1000">〜1000円</option>
+                <option value="2000">〜2000円</option>
+                <option value="3000">〜3000円</option>
+                </select>
+            </div>
+
+
+
  <!-- 新着/評価順選択 -->
     <div class="col-md-3">
         <select name="sort" class="form-select">
