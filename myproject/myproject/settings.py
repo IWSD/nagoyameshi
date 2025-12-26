@@ -158,8 +158,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'umareku@gmail.com'   # ← 自分のGmail
-EMAIL_HOST_PASSWORD = 'xpzfrhptsigpzokl'
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD") 
 
-DEFAULT_FROM_EMAIL = 'NagoyaMeshi <umareku@gmail.com>'
-
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
