@@ -301,6 +301,7 @@ def payment_cancel(request):
 #stripeのwebhook処理
 @csrf_exempt
 def stripe_webhook(request):
+    print("🔥 WEBHOOK 到達")
     payload = request.body
     sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
 
@@ -308,8 +309,11 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
-    except stripe.error.SignatureVerificationError:
-        return HttpResponse(status=400)
+    # except stripe.error.SignatureVerificationError:
+    #     return HttpResponse(status=400)
+    except Exception as e:
+      print("❌ Webhook エラー:", e)
+      return HttpResponse(status=400)
     
     print("通過1")
 

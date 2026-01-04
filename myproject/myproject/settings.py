@@ -16,7 +16,7 @@ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env()
+env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
@@ -146,6 +146,9 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
+# "whsec_6cf184a3dee2c4be31a058878ffe4671912ae93d58f4377e8420416b7b379dc3"
+# env("STRIPE_WEBHOOK_SECRET")
+print("🚨 STRIPE_WEBHOOK_SECRET =", STRIPE_WEBHOOK_SECRET)
 
 # ===== メール設定（開発用） =====
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
