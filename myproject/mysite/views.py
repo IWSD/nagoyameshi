@@ -399,11 +399,27 @@ class CreateCheckoutSessionView(View):
         # Stripe 管理画面で作成した Price ID（サブスク用）
         YOUR_PRICE_ID = "price_1SX0XqDVo3BBFnDCBkJHGtYG"
 
+        # ① Stripe Customer を用意
+        if user.stripe_customer_id:
+            customer_id = user.stripe_customer_id
+        else:
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.get_full_name() or user.username,
+            )
+            customer_id = customer.id # ← cus_XXXX
+
+            # Django 側に保存
+            user.stripe_customer_id = customer_id
+            user.save()
+
+
         # Stripe に Checkout セッションを作成依頼
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],      # クレジットカード決済
             mode="subscription",                # サブスクリプション課金
-            client_reference_id=user.id,        # Django ユーザーIDを紐づけ
+            customer=customer_id,               # Stripe Customer を適用
+            client_reference_id=str(user.id),  # ← Django の user.id
             line_items=[
                 {
                     "price": YOUR_PRICE_ID,
@@ -482,10 +498,13 @@ def stripe_webhook(request):
         # Stripe の Subscription ID
         subscription_id = session.get("subscription")
 
+        customer_id = session.get("customer")
+
         if user_id:
             user = CustomUser.objects.get(id=user_id)
             user.user_type = user.USER_TYPE_PAID
             user.stripe_subscription_id = subscription_id
+            user.stripe_customer_id = customer_id
             user.save()
 
         return HttpResponse(status=200)
