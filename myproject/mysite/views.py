@@ -266,64 +266,220 @@ class MyPageView(LoginRequiredMixin, TemplateView):
         context["reservations"] = reservations
         return context
 
-#stripeのサブスクリプション
+# #stripeのサブスクリプション
+# stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# class CreateCheckoutSessionView(View):
+#     def post(self, request, *args, **kwargs):
+#         user = request.user
+#         YOUR_PRICE_ID = "price_1SX0XqDVo3BBFnDCBkJHGtYG"
+
+#         checkout_session = stripe.checkout.Session.create(
+#             payment_method_types=["card"],
+#             # customer_creation="always",
+#             client_reference_id=request.user.id,
+#             line_items=[
+#                 {
+#                     "price": YOUR_PRICE_ID,
+#                     "quantity": 1,
+#                 },
+#             ],
+#             mode="subscription",
+#             success_url=request.build_absolute_uri(reverse("payment_success")),
+#             cancel_url=request.build_absolute_uri(reverse("payment_cancel")),
+            
+#         )
+#         print("通過0")
+#         return redirect(checkout_session.url)
+    
+# def payment_success(request):
+#     return render(request, "payment_success.html")
+
+# def payment_cancel(request):
+#     return render(request, "payment_cancel.html")
+
+# #stripeのwebhook処理
+# @csrf_exempt
+# def stripe_webhook(request):
+#     print("🔥 WEBHOOK 到達")
+#     payload = request.body
+#     sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+
+#     try:
+#         event = stripe.Webhook.construct_event(
+#             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+#         )
+#     # except stripe.error.SignatureVerificationError:
+#     #     return HttpResponse(status=400)
+#     except Exception as e:
+#       print("❌ Webhook エラー:", e)
+#       return HttpResponse(status=400)
+    
+#     print("通過1")
+
+#    # ① checkout 完了時
+#     if event["type"] == "checkout.session.completed":
+#         session = event["data"]["object"]
+
+#         user_id = session.get("client_reference_id")
+
+#         # Subscription ID を精確に取得
+#         subscription_id = session.get("subscription")
+
+#         if user_id:
+#             user = CustomUser.objects.get(id=user_id)
+#             user.user_type = user.USER_TYPE_PAID
+#             user.stripe_subscription_id = subscription_id
+#             user.save()
+#             print("通過2")
+
+#         return HttpResponse(status=200)
+    
+#     # ② サブスク解約(client から cancelしたとき含む)
+#     if event["type"] == "customer.subscription.deleted":
+#         subscription = event["data"]["object"]
+#         subscription_id = subscription["id"]
+
+#         # DB から該当ユーザーを特定
+#         try:
+#             user = CustomUser.objects.get(stripe_subscription_id=subscription_id)
+#             user.user_type = user.USER_TYPE_FREE
+#             user.stripe_subscription_id = None
+#             user.save()
+#             print("通過5")
+#         except CustomUser.DoesNotExist:
+#             pass
+
+#         return HttpResponse(status=200)
+
+#     return HttpResponse(status=200)
+
+# @login_required
+# def cancel_subscription(request):
+#     user = request.user
+
+#     if not user.stripe_subscription_id:
+#         # サブスクリプションがない場合は処理せずトップへ
+#         print("通過3")
+#         return redirect('mypage')
+
+#     try:
+#         # Stripe上でサブスクリプションをキャンセル
+#         stripe.Subscription.delete(user.stripe_subscription_id)
+
+#         # ユーザーのステータスを無料に変更
+#         user.user_type = user.USER_TYPE_FREE
+#         user.stripe_subscription_id = None
+#         user.save()
+#         print("通過4")
+
+#     except stripe.error.StripeError as e:
+#         # エラー処理（ログ出力やメッセージ表示）
+#         print("Stripe error:", e)
+
+#     return redirect('mypage')  # 任意のリダイレクト先
+
+# Stripe の秘密鍵（settings.py で設定済みのものを使用）
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+
+# ==============================
+# ① Checkout セッション作成
+# ==============================
 class CreateCheckoutSessionView(View):
+    """
+    Stripe の Checkout セッションを作成し、
+    ユーザーをサブスクリプション決済画面へ遷移させる View
+    ※ この View では DB のユーザー状態は一切変更しない
+    """
+
     def post(self, request, *args, **kwargs):
         user = request.user
+
+        # Stripe 管理画面で作成した Price ID（サブスク用）
         YOUR_PRICE_ID = "price_1SX0XqDVo3BBFnDCBkJHGtYG"
 
+        # Stripe に Checkout セッションを作成依頼
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            # customer_creation="always",
-            client_reference_id=request.user.id,
+            payment_method_types=["card"],      # クレジットカード決済
+            mode="subscription",                # サブスクリプション課金
+            client_reference_id=user.id,        # Django ユーザーIDを紐づけ
             line_items=[
                 {
                     "price": YOUR_PRICE_ID,
                     "quantity": 1,
                 },
             ],
-            mode="subscription",
-            success_url=request.build_absolute_uri(reverse("payment_success")),
-            cancel_url=request.build_absolute_uri(reverse("payment_cancel")),
-            
+            success_url=request.build_absolute_uri(
+                reverse("payment_success")
+            ),
+            cancel_url=request.build_absolute_uri(
+                reverse("payment_cancel")
+            ),
         )
-        print("通過0")
+
+        # Stripe の決済画面へリダイレクト
         return redirect(checkout_session.url)
-    
+
+
+# ==============================
+# ② 決済結果画面（表示のみ）
+# ==============================
 def payment_success(request):
+    """
+    Stripe 決済が完了した直後に表示される画面
+    ※ 有料会員化は Webhook 側で行う
+    """
     return render(request, "payment_success.html")
 
+
 def payment_cancel(request):
+    """
+    Stripe 決済がキャンセルされたときの画面
+    """
     return render(request, "payment_cancel.html")
 
-#stripeのwebhook処理
+
+# ==============================
+# ③ Stripe Webhook（最重要）
+# ==============================
 @csrf_exempt
 def stripe_webhook(request):
-    print("🔥 WEBHOOK 到達")
-    payload = request.body
-    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+    """
+    Stripe から送信される Webhook を受信し、
+    ユーザーの課金状態を確定させる View
 
+    ・有料化
+    ・解約時の無料化
+    はすべてここで行う
+    """
+
+    payload = request.body
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+
+    # Stripe 署名検証
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+            payload,
+            sig_header,
+            settings.STRIPE_WEBHOOK_SECRET
         )
-    # except stripe.error.SignatureVerificationError:
-    #     return HttpResponse(status=400)
     except Exception as e:
-      print("❌ Webhook エラー:", e)
-      return HttpResponse(status=400)
-    
-    print("通過1")
+        print("❌ Webhook エラー:", e)
+        return HttpResponse(status=400)
 
-   # ① checkout 完了時
-    if event["type"] == "checkout.session.completed":
+    event_type = event["type"]
+
+    # --------------------------
+    # ① 初回決済完了（有料化）
+    # --------------------------
+    if event_type == "checkout.session.completed":
         session = event["data"]["object"]
 
+        # Checkout 作成時に渡した user.id
         user_id = session.get("client_reference_id")
 
-        # Subscription ID を精確に取得
+        # Stripe の Subscription ID
         subscription_id = session.get("subscription")
 
         if user_id:
@@ -331,22 +487,23 @@ def stripe_webhook(request):
             user.user_type = user.USER_TYPE_PAID
             user.stripe_subscription_id = subscription_id
             user.save()
-            print("通過2")
 
         return HttpResponse(status=200)
-    
-    # ② サブスク解約(client から cancelしたとき含む)
-    if event["type"] == "customer.subscription.deleted":
+
+    # --------------------------
+    # ② サブスクリプション解約
+    # --------------------------
+    if event_type == "customer.subscription.deleted":
         subscription = event["data"]["object"]
         subscription_id = subscription["id"]
 
-        # DB から該当ユーザーを特定
         try:
-            user = CustomUser.objects.get(stripe_subscription_id=subscription_id)
+            user = CustomUser.objects.get(
+                stripe_subscription_id=subscription_id
+            )
             user.user_type = user.USER_TYPE_FREE
             user.stripe_subscription_id = None
             user.save()
-            print("通過5")
         except CustomUser.DoesNotExist:
             pass
 
@@ -354,27 +511,29 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
+
+# ==============================
+# ④ サブスクリプション解約処理
+# ==============================
 @login_required
 def cancel_subscription(request):
+    """
+    ユーザーが「解約する」ボタンを押したときの処理
+
+    ・Stripe に解約依頼のみ行う
+    ・DB の状態変更は Webhook に任せる
+    """
+
     user = request.user
 
+    # サブスク未契約なら何もしない
     if not user.stripe_subscription_id:
-        # サブスクリプションがない場合は処理せずトップへ
-        print("通過3")
-        return redirect('mypage')
+        return redirect("mypage")
 
     try:
-        # Stripe上でサブスクリプションをキャンセル
+        # Stripe 側でサブスクリプションを解約
         stripe.Subscription.delete(user.stripe_subscription_id)
-
-        # ユーザーのステータスを無料に変更
-        user.user_type = user.USER_TYPE_FREE
-        user.stripe_subscription_id = None
-        user.save()
-        print("通過4")
-
     except stripe.error.StripeError as e:
-        # エラー処理（ログ出力やメッセージ表示）
         print("Stripe error:", e)
 
-    return redirect('mypage')  # 任意のリダイレクト先
+    return redirect("mypage")
