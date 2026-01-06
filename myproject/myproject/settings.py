@@ -23,7 +23,7 @@ environ.Env.read_env(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!g0=gz8xok-ydh*am_*2rmr-u!!uwhtc!ayz&k*t(=ezzkp9vc'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -146,7 +146,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
-# "whsec_6cf184a3dee2c4be31a058878ffe4671912ae93d58f4377e8420416b7b379dc3"
+# "
 # env("STRIPE_WEBHOOK_SECRET")
 print("🚨 STRIPE_WEBHOOK_SECRET =", STRIPE_WEBHOOK_SECRET)
 
@@ -157,8 +157,8 @@ print("🚨 STRIPE_WEBHOOK_SECRET =", STRIPE_WEBHOOK_SECRET)
 # # ===== メール設定（Gmailテスト用） =====
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = ''
+EMAIL_PORT = 
 EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
