@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}店舗情報の編集{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">店舗情報の編集</h2>
+
+  <!-- 編集フォーム -->
+  <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm bg-light">
+    {% csrf_token %}
+
+    <!-- フォームのエラーメッセージ -->
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        入力内容に誤りがあります。確認してください。
+      </div>
+    {% endif %}
+
+    <!-- Djangoのフォームを自動で整形して表示 -->
+    {% for field in form %}
+      <div class="mb-3">
+        <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+          <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    <!-- 現在の画像を表示（もしあれば） -->
+    {% if object.img %}
+      <div class="mb-3 text-center">
+        <p>現在の画像:</p>
+        <img src="{{ object.img.url }}" alt="{{ object.name }}" class="img-fluid rounded" style="max-height:200px;">
+      </div>
+    {% endif %}
+
+    <!-- 保存ボタン -->
+    <div class="text-center">
+      <button type="submit" class="btn btn-primary px-4">保存する</button>
+      <a href="{% url 'shop_detail' object.pk %}" class="btn btn-secondary ms-2">キャンセル</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

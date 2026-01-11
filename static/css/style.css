@@ -1,0 +1,21 @@
+h1, h2 {
+    color: #333;
+    font-weight: bold;
+}
+
+body{
+  background-color: #fff8f6; 
+}
+
+.table th {
+    width: 25%;
+    background-color: #f8f9fa;
+}
+
+img {
+    border-radius: 8px;
+}
+
+.lead {
+    line-height: 1.8;
+}

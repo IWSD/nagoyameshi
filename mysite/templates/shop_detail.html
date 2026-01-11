@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ shop.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- メインビジュアル -->
+  <div class="text-center mb-4">
+    <img src="{{ shop.img.url }}" alt="{{ shop.name }}" class="img-fluid rounded" style="max-height:400px; object-fit:cover;">
+  </div>
+
+  <!-- 店舗名 -->
+  <h1 class="text-center">{{ shop.name }}</h1>
+
+  <!-- 説明 -->
+  <p class="lead text-center mt-3">{{ shop.explanation }}</p>
+
+  <!-- 詳細情報カード -->
+  <div class="card mt-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">店舗情報</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>最寄駅:</strong> {{ shop.near_station }}</li>
+        <li class="list-group-item"><strong>徒歩時間:</strong> {{ shop.walk_minutes }} 分</li>
+        <li class="list-group-item"><strong>ジャンル:</strong> {{ shop.shop_category_id }}</li>
+        <li class="list-group-item"><strong>価格帯:</strong> ¥{{ shop.price_range }}</li>
+        <li class="list-group-item"><strong>開店時刻:</strong> {{ shop.business_hour_start }} ~ {{ shop.business_hour_end }}</li>
+        <li class="list-group-item"><strong>住所:</strong> {{ shop.address }}</li>
+    </ul>
+    </div>
+  </div>
+
+  <!-- Google Map埋め込み -->
+  <div class="mt-5">
+    <h5>店舗の場所</h5>
+    <div class="ratio ratio-16x9">
+      <iframe
+        src="https://www.google.com/maps?q={{ shop.latitude }},{{ shop.longitude }}&hl=ja&z=16&output=embed"
+        width="100%"
+        height="450"
+        style="border:0; border-radius:10px;"
+        allowfullscreen=""
+        loading="lazy">
+      </iframe>
+    </div>
+  </div>
+
+</div>
+
+<!-- 予約実施 -->
+{% if user.is_authenticated and user.is_paid %}
+  <a href="{% url 'reservation_initial' shop.pk %}" class="btn btn-success mt-3">予約する</a>
+{% elif not user.is_authenticated %}
+  <p><a href="{% url 'login' %}">ログイン</a>すると予約できます。</p>
+{% endif %}
+
+ <!-- レビュー投稿 -->
+<hr>
+<h4>レビュー一覧</h4>
+
+<!-- {% if object.reviews.all %}
+  {% for review in object.reviews.all %}
+    <div class="border rounded p-3 mb-3">
+      <h5>{{ review.title }}（{{ review.rating }}点）</h5>
+      <p>{{ review.content }}</p>
+      <small class="text-muted">
+        投稿者：{{ review.user.username }}
+        投稿日時：{{ review.created_at|date:"Y/m/d H:i" }}
+      </small>
+    </div>
+  {% endfor %} -->
+ {% for review in reviews %}
+  <div class="border rounded p-3 mb-3">
+    <h5>{{ review.title }} {{ review.rating }} </h5>
+    <p> {{ review.content }}</p>
+    <small class="text-muted">投稿者：{{ review.user.username }} {{ review.created_at|date:"Y/m/d H:i" }}</small>
+  </div>
+ {% endfor %}
+{% else %}
+  <p> まだレビューがありません</p>  
+{% endif %}
+
+{% if user.is_authenticated and user.is_paid %}
+ <a href="{% url 'review_create' object.pk %}" class="btn btn-primary" >レビューを書く</a>
+{% elif not user.is_authoricated %}
+ <p><a href="{% url 'login' %}">ログイン</a>するとレビューを投稿できます。</p>
+{% endif %}
+
+{% endblock %}

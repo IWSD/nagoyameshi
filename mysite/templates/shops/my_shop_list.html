@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>担当店舗一覧</h2>
+
+{% if object_list %}
+    <ul>
+        {% for shop in object_list %}
+            <li>
+                {{ shop.name }}
+                <a href="{% url 'shop_edit' shop.pk %}">編集</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>担当店舗がありません。</p>
+{% endif %}
+
+{% endblock %}
