@@ -29,7 +29,11 @@ SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = os.getenv("DEBUG", "False") == "True"
-DEBUG = True
+DEBUG = False
+CSRF_TRUSTED_ORIGINS = [
+    'https://nagoyameshi-samurai-fix-b4a985821a21.herokuapp.com',
+]
+
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'nagoyameshi-samurai-fix-b4a985821a21.herokuapp.com']
 
