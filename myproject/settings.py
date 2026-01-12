@@ -31,13 +31,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
 # DEBUG = os.getenv("DEBUG", "False") == "True"
 DEBUG = True
 
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'nagoyameshi-samurai-fix-b4a985821a21.herokuapp.com']
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'nagoyameshi-samurai-fix-b4a985821a21.herokuapp.com']
 
-if os.getenv("DYNO"):  # Heroku上でのみ
-    ALLOWED_HOSTS = ['.herokuapp.com']
-else:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
