@@ -35,7 +35,6 @@ CSRF_TRUSTED_ORIGINS = ['https://nagoyameshi-samurai-fix-b4a985821a21.herokuapp.
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'nagoyameshi-samurai-fix-b4a985821a21.herokuapp.com']
 
-
 # Application definition
 
 INSTALLED_APPS = [
